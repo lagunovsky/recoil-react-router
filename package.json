@@ -1,6 +1,6 @@
 {
   "name": "@lagunovsky/recoil-react-router",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Recoil binding for React Router v6",
   "author": "Ivan Lagunovsky",
   "license": "MIT",
@@ -24,20 +24,20 @@
     "prepublishOnly": "yarn run build"
   },
   "peerDependencies": {
-    "history": "^5.0.0",
+    "history": "^5.0.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-router": "^6.0.0-beta.4",
     "recoil": "^0.4.1"
   },
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^13.0.1",
-    "@types/react": "^17.0.14",
+    "@rollup/plugin-node-resolve": "^13.0.4",
+    "@types/react": "^17.0.20",
     "install-peers-cli": "^2.2.0",
-    "rollup": "^2.53.2",
+    "rollup": "^2.56.3",
     "rollup-plugin-peer-deps-external": "^2.2.4",
     "rollup-plugin-typescript2": "^0.30.0",
-    "typescript": "^4.3.5"
+    "typescript": "^4.4.3"
   },
   "repository": {
     "type": "git",
