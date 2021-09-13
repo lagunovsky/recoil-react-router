@@ -25,19 +25,44 @@ To change the current location, you'll want to use one of the following:
 - `history.back` - Navigates one entry back in the history stack
 - `history.forward` - Navigates one entry forward in the history stack
 
+## API
+
+#### bindHistory(history: History)
+
+Bind a `history` instance with a recoil state
+
+#### RecoilReactRouter(props: { children: React.ReactNode })
+
+`<RecoilReactRouter>` is a component that synchronizes `recoil`, `history` and `react-router`
+
+#### routerState: RecoilState<{ action: History.Action, location: History.Location }>
+
+An atom that contains current history state
+
+#### useTimeTraveling()
+
+A hook that allows to use [time travel](https://recoiljs.org/docs/guides/dev-tools#time-travel)
+
 ## Example
 
 ```typescript jsx
-import { bindHistory, RecoilReactRouter, useTimeTraveling } from '@lagunovsky/recoil-react-router'
+import { bindHistory, RecoilReactRouter, routerState, useTimeTraveling } from '@lagunovsky/recoil-react-router'
 import { createBrowserHistory } from 'history'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { RecoilRoot, useRecoilValue } from 'recoil'
 
 
 const history = createBrowserHistory()
 bindHistory(history)
+
+function Page() {
+  const { location } = useRecoilValue(routerState)
+  return (
+    <div>{location.pathname}</div>
+  )
+}
 
 function App() {
   useTimeTraveling() // if you want to use time travel
@@ -45,7 +70,7 @@ function App() {
   return (
     <RecoilReactRouter>
       <Routes>
-        <Route path={'*'}/>
+        <Route path={'*'} element={<Page/>}/>
       </Routes>
     </RecoilReactRouter>
   )
