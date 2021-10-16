@@ -27,9 +27,13 @@ To change the current location, you'll want to use one of the following:
 
 ## API
 
-#### bindHistory(history: History)
+#### bindHistory(history: History, atomKey?: string)
 
 Bind a `history` instance with a recoil state
+
+#### createHistory(creator: () => History, atomKey?: string): History
+
+Run creator, bind a `history` instance with a recoil state and return it
 
 #### RecoilReactRouter(props: { children: React.ReactNode })
 
@@ -54,8 +58,7 @@ import { Route, Routes } from 'react-router'
 import { RecoilRoot, useRecoilValue } from 'recoil'
 
 
-const history = createBrowserHistory()
-bindHistory(history)
+const history = createHistory(createBrowserHistory)
 
 function Page() {
   const { location } = useRecoilValue(routerState)
