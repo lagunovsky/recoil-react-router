@@ -1,65 +1,71 @@
-import { Action, History, Location } from 'history'
-import React, { useLayoutEffect } from 'react'
-import { Router } from 'react-router'
-import { atom, RecoilState, useRecoilState, useRecoilValue } from 'recoil'
+import { Action, createBrowserHistory, History, Location } from 'history'
+import React from 'react'
+import { Router as ReactRouter } from 'react-router'
+import { atom, RecoilValue, selector, useRecoilValue } from 'recoil'
 
 
-export type RouterState = { action: Action, location: Location }
+export type Router = {
+  state: RecoilValue<{ action: Action, location: Location }>
+  history: History
+}
 
-let navigator: History
 let timeTravelling = false
 
-export let routerState: RecoilState<RouterState>
-
-export function bindHistory(bindHistory: History, atomKey: string = 'router') {
-  navigator = bindHistory
-  routerState = atom({ key: atomKey, default: { action: navigator.action, location: navigator.location } })
+export function makeRouter(getHistory: () => History = createBrowserHistory, namespace: string = 'router'): Router {
+  const history = getHistory()
+  const state = atom({
+    key: namespace + '/core',
+    default: selector({
+      key: namespace + '/default',
+      get: () => ({ action: history.action, location: history.location }),
+    }),
+    effects_UNSTABLE: [
+      ({ setSelf }) => history.listen(nextState => {
+        if(timeTravelling === false){
+          setSelf(nextState)
+        }
+      }),
+    ],
+  })
+  return { state, history }
 }
 
-export function createHistory(creator: () => History, atomKey: string = 'router') {
-  navigator = creator()
-  routerState = atom({ key: atomKey, default: { action: navigator.action, location: navigator.location } })
-  return navigator
+function compareLocation(firstLocation: Location, secondLocation: Location) {
+  return (
+    firstLocation.pathname !== secondLocation.pathname ||
+    firstLocation.search !== secondLocation.search ||
+    firstLocation.hash !== secondLocation.hash ||
+    firstLocation.state !== secondLocation.state
+  )
 }
 
-function checkHistory() {
-  if (navigator === undefined) {
-    throw new Error('You should call bindHistory()')
-  }
-}
-
-export function useTimeTraveling() {
-  checkHistory()
-
-  const { action, location } = useRecoilValue(routerState)
-  if (
-    action === 'PUSH' &&
-    (
-      navigator.location.pathname !== location.pathname ||
-      navigator.location.search !== location.search ||
-      navigator.location.hash !== location.hash ||
-      navigator.location.state !== location.state
-    )
-  ) {
+export function useTimeTraveling(router: Router) {
+  const { action, location } = useRecoilValue(router.state)
+  if (action === 'PUSH' && compareLocation(router.history.location, location)) {
     timeTravelling = true
-    navigator.push(location)
+    router.history.push(location)
   } else {
     timeTravelling = false
   }
 }
 
-export function RecoilReactRouter(props: { children: React.ReactNode }) {
-  checkHistory()
+export type RouterProps = {
+  router: Router
+  children?: React.ReactNode
+  basename?: string
+  static?: boolean
+}
 
-  const [ { action, location }, setReactRouterState ] = useRecoilState(routerState)
-  useLayoutEffect(() => navigator.listen((nextState) => timeTravelling === false && setReactRouterState(nextState)), [])
-
+export function RecoilReactRouter(props: RouterProps) {
+  const { action, location } = useRecoilValue(props.router.state)
   return (
-    <Router
+    <ReactRouter
       action={action}
       location={location}
-      navigator={navigator}
+      basename={props.basename}
       children={props.children}
+      navigator={props.router.history}
+      static={props.static}
     />
   )
 }
